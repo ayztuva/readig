@@ -4,11 +4,11 @@ TODO
 from time import sleep
 
 from bs4 import BeautifulSoup
-from selenium import webdriver
 import requests
 
 URL = 'https://www.instagram.com/'
 URL_PROXY = 'https://free-proxy-list.net/'
+HEADERS = {'User-Agent': 'Mozilla/5.0'}
 
 
 def get_proxies():
@@ -30,11 +30,9 @@ def get_proxies():
                 if tds[-2].text.strip() == 'yes':
                     address = tds[0].text
                     port = tds[1].text
-                    country = tds[3].text
                     data = {
                         'schema': 'https',
-                        'address': address + ':' + port,
-                        'country': country
+                        'address': address + ':' + port
                     }
                     proxies.append(data)
 
@@ -49,29 +47,21 @@ def get_proxies():
 
         print(f'+++\tGot {len(proxies)} proxies - checking: ', end='')
 
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
-
         for proxy in proxies:
-            if len(options.arguments) > 1:
-                options.arguments.pop()
-
-            proxy = proxy['schema'] + ':' + proxy['address']
-            options.add_argument(f'--proxy-server={proxy}')
-            driver = webdriver.Firefox(options=options)
-
             try:
-                driver.get(URL)
-                if driver.current_url == URL:
+                response = requests.get(
+                    URL,
+                    proxies=proxy,
+                    headers=HEADERS
+                )
+                if response.status_code == 200:
                     approved_proxies.append(proxy)
-                    print('A', end='')
+                    print('A', end=' ')
                 else:
-                    print('D', end='')
+                    print('D', end=' ')
             except Exception as error:
                 errors.append(error)
-                print('-', end='')
-
-            driver.quit()
+                print('D', end=' ')
         print()
 
         if approved_proxies:
@@ -79,8 +69,8 @@ def get_proxies():
             break
         print('---\tNone of proxes was approved.')
         print('\tErrors:')
-        for e in errors:
-            print('\t' + e)
+        for error in errors:
+            print('\t' + error)
         print('\tRetry in 5 min')
         sleep(300)
 
@@ -90,12 +80,13 @@ def change_proxy(options, proxies):
     """
     TODO
     """
-    options.arguments.pop()
     if len(proxies) < 2:
         print('---\tNeed new proxies.')
         return options
+    proxies.pop()
     options.arguments.pop()
-    proxy = proxies.pop()
+    p = proxies[-1]
+    proxy = p['schema'] + ':' + p['address']
     options.add_argument(f'--proxy-server={proxy}')
     return options
 

@@ -4,6 +4,7 @@ venv/
 .venv
 .venv/
 .vscode/
+profiles/*.txt
 
 __pycache__/
 *.py[cod]
@@ -19,6 +20,5 @@ profiles.txt
 *.sublime-workspace
 *.log
 
-profiles/
 
 db.sqlite3
