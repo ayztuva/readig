@@ -19,12 +19,11 @@ def get_proxies():
         proxies = []
         approved_proxies = []
         errors = []
-        html = requests.get(URL_PROXY).text
-        soup = BeautifulSoup(html, 'lxml')
-
-        trs = soup.find('table', id='proxylisttable').find_all('tr')[1:21]
 
         while not proxies:
+            html = requests.get(URL_PROXY).text
+            soup = BeautifulSoup(html, 'lxml')
+            trs = soup.find('table', id='proxylisttable').find_all('tr')[1:21]
             for tr in trs:
                 tds = tr.find_all('td')
                 if tds[-2].text.strip() == 'yes':
@@ -37,13 +36,13 @@ def get_proxies():
                     proxies.append(data)
 
             if not proxies:
-                print('---\tNo HTTPS proxies. Retry in 5 minutes.')
-                sleep(300)
+                print('---\tNo HTTPS proxies. Retry in 3 minutes.')
+                sleep(180)
             elif len(proxies) < 2:
                 print(f'---\tNot enough HTTPS proxies ({len(proxies)}).')
-                print('\tRetry in 5 minutes.')
+                print('\tRetry in 3 minutes.')
                 proxies.clear()
-                sleep(300)
+                sleep(180)
 
         print(f'+++\tGot {len(proxies)} proxies - checking: ', end='')
 
@@ -71,8 +70,8 @@ def get_proxies():
         print('\tErrors:')
         for error in errors:
             print('\t' + error)
-        print('\tRetry in 5 min')
-        sleep(300)
+        print('\tRetry in 3 min')
+        sleep(180)
 
     return approved_proxies
 

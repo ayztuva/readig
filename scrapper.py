@@ -1,7 +1,10 @@
 """
 TODO
 """
+import os
+import stat
 import json
+import urllib.request
 
 import requests
 from selenium import webdriver
@@ -36,7 +39,7 @@ def main():
     Scrapper
     """
     proxies = get_proxies()
-    media = []
+    media = {}
 
     proxy = proxies[-1]['schema'] + ':' + proxies[-1]['address']
     options = webdriver.FirefoxOptions()
@@ -49,14 +52,17 @@ def main():
 
     driver.get(profile_url)
     html = driver.page_source
+    driver.quit()
 
     print(f'\tScrapping {username}:', end='\t')
 
     # Get data from HTML
     data = data_from_html(html)
-    media.extend(data['media'])
+    media.update(data['media'])
 
-    # Needed data
+
+
+    # Work data
     qhash = query_hash(html)
     profile_id = data['profile_id']
 
@@ -87,16 +93,31 @@ def main():
             break
 
         data = data_from_ajax(container)
-        media.extend(data['media'])
+        media.update(data['media'])
         print('*', end='')
 
-    with open(f'profiles/{username}.txt', 'w') as file:
-        for url in media:
-            file.write(url+'\n')
+    # Download recieved media
+    try:
+        os.mkdir(f'./profiles/{username}')
+        os.chdir(f'./profiles/{username}')
+    except (FileExistsError, PermissionError):
+        print ('---\tError occured.\tTwo possible reasons:')
+        print(f'\t1. Directory "{username}/" is already exists')
+        print('\t2. Directory "profiles/" has other permissions, than "777".')
+        print('\tFix and try again.')
+        print('\tIf you confused, send email to author: evan.gribov@gmail.com')
+        with open('tmp.json', 'w') as file:
+            file.write(json.dumps(media))
+        print('===\tRecieved media has been saved in "tmp.json".')
+        return
+
+    name = 0
+    for key, value in media.items():
+        filename = f'{name}.jpg' if value == 'jpg' else f'{name}.mp4' 
+        urllib.request.urlretrieve(key, filename)
+        name += 1
 
     print('\n+++\tDone.')
-    driver.quit()
-
 
 if __name__ == '__main__':
     main()

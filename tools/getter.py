@@ -15,8 +15,7 @@ def data_from_html(html):
     """
     TODO
     """
-    data = {}
-    media_urls = []
+    media = {}
 
     match = re.search(INTERNAL_DATA_PATTERN, html).group()
     match = match.lstrip('window._sharedData= ').rstrip(';</script>')
@@ -38,37 +37,34 @@ def data_from_html(html):
                 slideshow_edges = slideshow.get('edges')
                 for slideshow_edge in slideshow_edges:
                     if slideshow_edge['node']['is_video']:
-                        url = slideshow_edge['node']['video_url']
+                        obj = {
+                            slideshow_edge['node']['video_url']: 'mp4'}
                     else:
-                        url = slideshow_edge['node']['display_url']
-                    media_urls.append(url)
+                        obj = {
+                            slideshow_edge['node']['display_url']: 'jpg'}
+                    media.update(obj)
             else:
                 if edge['node']['is_video']:
-                    url = edge['node']['video_url']
+                    obj = {edge['node']['video_url']: 'mp4'}
                 else:
-                    url = edge['node']['display_url']
-                media_urls.append(url)
-
-        data.update(
-            {
-                'profile_id': profile_id,
-                'has_next_page': has_next_page,
-                'end_cursor': end_cursor,
-                'media': media_urls
-            }
-        )
+                    obj = {edge['node']['display_url']: 'jpg'}
+                media.update(obj)
     except KeyError:
         # LOGGING TODO
-        pass
+        return {}
 
-    return data
+    return {
+        'profile_id': profile_id,
+        'has_next_page': has_next_page,
+        'end_cursor': end_cursor,
+        'media': media
+    }
 
 def data_from_ajax(dict_data):
     """
     TODO
     """
-    data = {}
-    media_urls = []
+    media = {}
 
     try:
         page = dict_data['data']['user']['edge_owner_to_timeline_media']
@@ -83,29 +79,27 @@ def data_from_ajax(dict_data):
                 slideshow_edges = slideshow.get('edges')
                 for slideshow_edge in slideshow_edges:
                     if slideshow_edge['node']['is_video']:
-                        url = slideshow_edge['node']['video_url']
+                        obj = {
+                            slideshow_edge['node']['video_url']: 'mp4'}
                     else:
-                        url = slideshow_edge['node']['display_url']
-                    media_urls.append(url)
+                        obj = {
+                            slideshow_edge['node']['display_url']: 'jpg'}
+                    media.update(obj)
             else:
                 if edge['node']['is_video']:
-                    url = edge['node']['video_url']
+                    obj = {edge['node']['video_url']: 'mp4'}
                 else:
-                    url = edge['node']['display_url']
-                media_urls.append(url)
-
-        data.update(
-            {
-                'has_next_page': has_next_page,
-                'end_cursor': end_cursor,
-                'media': media_urls
-            }
-        )
+                    obj = {edge['node']['display_url']: 'jpg'}
+                media.update(obj)
     except KeyError:
         # LOGGING TODO
-        pass
+        return {}
 
-    return data
+    return {
+        'has_next_page': has_next_page,
+        'end_cursor': end_cursor,
+        'media': media
+    }
 
 def query_hash(html):
     """

@@ -4,7 +4,7 @@ venv/
 .venv
 .venv/
 .vscode/
-profiles/*.txt
+profiles/*/
 
 __pycache__/
 *.py[cod]
